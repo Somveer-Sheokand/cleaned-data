@@ -161,8 +161,9 @@
             color: white;
             padding: 0.5rem 1.8rem;
             font-size: 0.95rem;
+            min-width: 160px;
         }
-        .btn-download-all:hover {
+        .btn-download-all:hover:not(:disabled) {
             background: #1f6f44;
             transform: scale(1.02);
         }
@@ -258,19 +259,6 @@
         .alert.show {
             display: block;
         }
-        .loader {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 3px solid rgba(26, 95, 176, 0.2);
-            border-radius: 50%;
-            border-top-color: #1a5fb0;
-            animation: spin 0.7s linear infinite;
-            vertical-align: middle;
-            margin-right: 8px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
         .badge-count {
             background: #1a5fb0;
             color: white;
@@ -278,13 +266,25 @@
             border-radius: 30px;
             font-size: 0.8rem;
         }
+        .download-all-wrapper {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .file-count-badge {
+            background: #e9f0f9;
+            padding: 0.1rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            color: #1d3853;
+        }
     </style>
 </head>
 <body>
 <div class="card">
     <h1>📄 registration · split</h1>
     <div class="sub">
-        ⚡ replicates python script logic · formats reg numbers by frequency &amp; language
+        ⚡formats reg numbers by frequency &amp; language
     </div>
 
     <div class="alert" id="alertBox"></div>
@@ -315,9 +315,11 @@
                 <span>📦 output files</span>
                 <span id="fileCount" class="badge-count">0</span>
             </div>
-            <button class="btn btn-download-all" id="downloadAllBtn" disabled>
-                📥 Download All
-            </button>
+            <div class="download-all-wrapper">
+                <button class="btn btn-download-all" id="downloadAllBtn" disabled>
+                    📥 Download All
+                </button>
+            </div>
         </div>
         <div class="output-list" id="outputList">
             <div class="empty-message">⏳ process a CSV to see files</div>
@@ -592,6 +594,7 @@
                 outputList.innerHTML = `<div class="empty-message">📭 no groups created</div>`;
                 fileCount.textContent = '0';
                 downloadAllBtn.disabled = true;
+                downloadAllBtn.textContent = '📥 Download All';
                 return;
             }
             let html = '';
@@ -606,6 +609,7 @@
             outputList.innerHTML = html;
             fileCount.textContent = outputFiles.length;
             downloadAllBtn.disabled = false;
+            downloadAllBtn.textContent = '📥 Download All';
             
             document.querySelectorAll('.dl-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -735,6 +739,7 @@
                     outputList.innerHTML = `<div class="empty-message">⏳ click "process &amp; split"</div>`;
                     fileCount.textContent = '0';
                     downloadAllBtn.disabled = true;
+                    downloadAllBtn.textContent = '📥 Download All';
                     showAlert(`✅ Loaded ${parsedRows.length} rows from ${file.name}`, false);
                 } catch (err) {
                     showAlert(`Error reading file: ${err.message}`);
@@ -790,12 +795,14 @@
             outputList.innerHTML = `<div class="empty-message">⏳ process a CSV to see files</div>`;
             fileCount.textContent = '0';
             downloadAllBtn.disabled = true;
+            downloadAllBtn.textContent = '📥 Download All';
             alertBox.className = 'alert';
         });
 
         // init
         processBtn.disabled = true;
         downloadAllBtn.disabled = true;
+        downloadAllBtn.textContent = '📥 Download All';
     })();
 </script>
 </body>
