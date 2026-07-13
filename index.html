@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registration formatter · CSV split</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+        body {
+            background: #f4f7fb;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+        .card {
+            background: white;
+            max-width: 1000px;
+            width: 100%;
+            border-radius: 32px;
+            box-shadow: 0 20px 60px rgba(0, 20, 40, 0.12);
+            padding: 2rem 2rem 2.5rem;
+            transition: all 0.2s;
+        }
+        h1 {
+            font-weight: 600;
+            font-size: 1.9rem;
+            letter-spacing: -0.02em;
+            color: #0b1e33;
+            margin: 0 0 0.25rem 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sub {
+            color: #3b5a7a;
+            font-size: 0.95rem;
+            border-left: 3px solid #80b4e6;
+            padding-left: 1rem;
+            margin: 0 0 1.75rem 0;
+            background: #f0f6fe;
+            border-radius: 0 12px 12px 0;
+            line-height: 1.4;
+        }
+        .upload-zone {
+            border: 2px dashed #c7d9e9;
+            background: #fafcff;
+            border-radius: 24px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            transition: 0.2s;
+            margin-bottom: 2rem;
+        }
+        .upload-zone.dragover {
+            border-color: #2a7de1;
+            background: #e9f0fe;
+        }
+        .upload-zone input[type="file"] {
+            display: none;
+        }
+        .upload-label {
+            display: inline-block;
+            background: #1a5fb0;
+            color: white;
+            font-weight: 500;
+            padding: 0.75rem 2rem;
+            border-radius: 60px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.15s;
+            border: none;
+            box-shadow: 0 4px 8px rgba(26, 95, 176, 0.2);
+        }
+        .upload-label:hover {
+            background: #0f4a8a;
+            transform: scale(1.02);
+        }
+        .file-info {
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            color: #1f3b58;
+        }
+        .file-info span {
+            font-weight: 600;
+            color: #0b1e33;
+        }
+        .status-area {
+            background: #f0f5fb;
+            border-radius: 20px;
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0 1.8rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem 1rem;
+        }
+        .badge {
+            background: #dce6f0;
+            padding: 0.25rem 0.9rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #1d3853;
+        }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.7rem;
+            align-items: center;
+        }
+        .btn {
+            background: white;
+            border: 1px solid #c7d9e9;
+            padding: 0.5rem 1.4rem;
+            border-radius: 60px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #1d3853;
+            cursor: pointer;
+            transition: 0.12s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .btn-primary {
+            background: #1a5fb0;
+            border: 1px solid #1a5fb0;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #124a8a;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .btn-success {
+            background: #1f8b4c;
+            border: 1px solid #1f8b4c;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #16733e;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #b0c8df;
+        }
+        .output-section {
+            margin-top: 1.8rem;
+            border-top: 1px solid #e2eaf3;
+            padding-top: 1.8rem;
+        }
+        .output-list {
+            background: #fafcfe;
+            border-radius: 20px;
+            padding: 0.2rem 0;
+            max-height: 260px;
+            overflow-y: auto;
+            border: 1px solid #e4edf6;
+        }
+        .output-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 1.2rem;
+            border-bottom: 1px solid #ecf2f9;
+            font-size: 0.9rem;
+        }
+        .output-item:last-child {
+            border-bottom: none;
+        }
+        .output-item .fname {
+            font-family: 'SF Mono', 'Cascadia Code', monospace;
+            color: #0f2b47;
+            font-weight: 500;
+        }
+        .output-item .dl-btn {
+            background: #e5edf6;
+            border: none;
+            padding: 0.2rem 1.2rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #13417a;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        .output-item .dl-btn:hover {
+            background: #c7d9eb;
+        }
+        .empty-message {
+            color: #6b85a0;
+            text-align: center;
+            padding: 2rem 0;
+            font-style: italic;
+        }
+        .footnote {
+            font-size: 0.8rem;
+            color: #5b7799;
+            margin-top: 1.2rem;
+            text-align: right;
+            border-top: 1px solid #e6eefa;
+            padding-top: 1rem;
+        }
+        .loader {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(26, 95, 176, 0.2);
+            border-radius: 50%;
+            border-top-color: #1a5fb0;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>📄 registration · split</h1>
+    <div class="sub">
+        ⚡ replicates python script logic · formats reg numbers by frequency &amp; language
+    </div>
+
+    <!-- upload -->
+    <div class="upload-zone" id="dropZone">
+        <input type="file" id="fileInput" accept=".csv" />
+        <label for="fileInput" class="upload-label" id="uploadLabel">📤 choose CSV file</label>
+        <div class="file-info" id="fileInfo">no file selected</div>
+    </div>
+
+    <!-- status + actions -->
+    <div class="status-area">
+        <div>
+            <span class="badge" id="rowBadge">0 rows</span>
+            <span class="badge" id="freqBadge">—</span>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-primary" id="processBtn" disabled>⚙️ process &amp; split</button>
+            <button class="btn btn-outline" id="clearBtn">clear</button>
+        </div>
+    </div>
+
+    <!-- output -->
+    <div class="output-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <span style="font-weight: 600; color: #12304b;">📦 output files</span>
+            <span id="fileCount" style="font-size: 0.8rem; background: #e9f0f9; padding: 0.1rem 1rem; border-radius: 30px;">0</span>
+        </div>
+        <div class="output-list" id="outputList">
+            <div class="empty-message">⏳ process a CSV to see files</div>
+        </div>
+    </div>
+    <div class="footnote">
+        formats: T5, T3, EXTT3, T1, EXTT1, T0, EXTT0, T10, T15, T22, T30, BIKE, BIKE1, TWT0, TWT1, TWT3, TWT5
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ----- core formatters (exact match to python) -----
+        function t5_format(val) {
+            val = String(val).trim();
+            const len = val.length;
+            if (len === 8) return "\\\\ \\\\ " + val.slice(0,2) + "    " + val.slice(2,4) + "     " + val.slice(4,8);
+            if (len === 9) return "\\\\ " + val.slice(0,2) + "   " + val.slice(2,4) + "   " + val.slice(4,5) + "   " + val.slice(5,9);
+            if (len === 10) return "\\\\ " + val.slice(0,2) + "  " + val.slice(2,4) + "  " + val.slice(4,6) + " " + val.slice(6,10);
+            if (len === 11) return "\\\\ " + val.slice(0,2) + val.slice(2,7) + val.slice(7,11);
+            return val;
+        }
+        function t3_format(val) {
+            val = String(val).trim();
+            const len = val.length;
+            if (len === 8) return "\\\\ \\\\ " + val.slice(0,2) + "    " + val.slice(2,4) + "     " + val.slice(4,8);
+            if (len === 9) return "\\\\ " + val.slice(0,2) + "   " + val.slice(2,4) + "   " + val.slice(4,5) + "   " + val.slice(5,9);
+            if (len === 10) return "\\\\ " + val.slice(0,2) + "  " + val.slice(2,4) + "  " + val.slice(4,6) + " " + val.slice(6,10);
+            if (len === 11) return "\\\\ " + val.slice(0,2) + val.slice(2,7) + val.slice(7,11);
+            return val;
+        }
+        function t1_format(val) {
+            val = String(val).trim();
+            const len = val.length;
+            if (len === 8) return "\\\\ \\\\ " + val.slice(0,2) + "   " + val.slice(2,4) + "    " + val.slice(4,8);
+            if (len === 9) return "\\\\ " + val.slice(0,2) + " " + val.slice(2,4) + " " + val.slice(4,5) + " " + val.slice(5,9);
+            if (len === 10) return "\\\\ " + val.slice(0,2) + " " + val.slice(2,4) + "" + val.slice(4,6) + " " + val.slice(6,10);
+            if (len === 11) return val.slice(0,2) + val.slice(2,7) + val.slice(7,11);
+            return val;
+        }
+        function t0_format(val) {
+            val = String(val).trim();
+            const len = val.length;
+            if (len === 8) return "\\\\ \\\\ " + val.slice(0,2) + "   " + val.slice(2,4) + "   " + val.slice(4,8);
+            if (len === 9) return "\\\\ " + val.slice(0,2) + "  " + val.slice(2,4) + " " + val.slice(4,5) + "  " + val.slice(5,9);
+            if (len === 10) return val.slice(0,2) + " " + val.slice(2,4) + " " + val.slice(4,6) + " " + val.slice(6,10);
+            if (len === 11) return val.slice(0,2) + val.slice(2,7) + val.slice(7,11);
+            return val;
+        }
+        function t10_format(val) {
+            val = String(val).trim();
+            const len = val.length;
+            if (len === 8) return "\\\\ \\\\ " + val.slice(0,2) + "    " + val.slice(2,4) + "     " + val.slice(4,8);
+            if (len === 9) return "\\\\ " + val.slice(0,2) + "   " + val.slice(2,4) + "   " + val.slice(4,5) + "   " + val.slice(5,9);
+            if (len === 10) return "\\\\ " + val.slice(0,2) + " " + val.slice(2,4) + " " + val.slice(4,6) + " " + val.slice(6,10);
+            if (len === 11) return "\\\\ " + val.slice(0,2) + val.slice(2,7) + val.slice(7,11);
+            return val;
+        }
+        function t15_format(val) {
+            val = String(val).trim();
+            const len = val.length;
+            if (len === 8) return "\\\\ \\\\ " + val.slice(0,2) + "    " + val.slice(2,4) + "     " + val.slice(4,8);
+            if (len === 9) return "\\\\ " + val.slice(0,2) + "  " + val.slice(2,4) + " " + val.slice(4,5) + "  " + val.slice(5,9);
+            if (len === 10) return "\\\\ " + val.slice(0,2) + "  " + val.slice(2,4) + "  " + val.slice(4,6) + " " + val.slice(6,10);
+            if (len === 11) return "\\\\ " + val.slice(0,2) + val.slice(2,7) + val.slice(7,11);
+            return val;
+        }
+        function t22_format(val) {
+            val = String(val).trim();
+            const len = val.length;
+            if (len === 8) return "\\\\ \\\\ " + val.slice(0,2) + "    " + val.slice(2,4) + "     " + val.slice(4,8);
+            if (len === 9) return "\\\\ " + val.slice(0,2) + "   " + val.slice(2,4) + "   " + val.slice(4,5) + "   " + val.slice(5,9);
+            if (len === 10) return "\\\\ " + val.slice(0,2) + "  " + val.slice(2,4) + "  " + val.slice(4,6) + " " + val.slice(6,10);
+            if (len === 11) return "\\\\ " + val.slice(0,2) + val.slice(2,7) + val.slice(7,11);
+            return val;
+        }
+        function t30_format(val) {
+            val = String(val).trim();
+            const len = val.length;
+            if (len === 8) return "\\\\ \\\\ " + val.slice(0,2) + "    " + val.slice(2,4) + "     " + val.slice(4,8);
+            if (len === 9) return "\\\\ " + val.slice(0,2) + "   " + val.slice(2,4) + "   " + val.slice(4,5) + "   " + val.slice(5,9);
+            if (len === 10) return "\\\\ " + val.slice(0,2) + "  " + val.slice(2,4) + "  " + val.slice(4,6) + " " + val.slice(6,10);
+            if (len === 11) return "\\\\ " + val.slice(0,2) + val.slice(2,7) + val.slice(7,11);
+            return val;
+        }
+        function bike_format(val) {
+            val = String(val).trim();
+            const len = val.length;
+            if (len === 8) return "\\\\ \\\\ " + val.slice(0,2) + "     " + val.slice(2,4) + "     " + val.slice(4,8);
+            if (len === 9) return "\\\\ \\\\ " + val.slice(0,2) + "  " + val.slice(2,4) + "   " + val.slice(4,5) + "   " + val.slice(5,9);
+            if (len === 10) return val.slice(0,2) + "   " + val.slice(2,4) + "  " + val.slice(4,6) + "   " + val.slice(6,10);
+            if (len === 11) return val.slice(0,2) + "  " + val.slice(2,4) + " " + val.slice(4,7) + "  " + val.slice(7,11);
+            return val;
+        }
+        function bike1_format(val) {
+            val = String(val).trim();
+            const len = val.length;
+            if (len === 8) return "\\\\ " + val.slice(0,2) + "    " + val.slice(2,4) + "     " + val.slice(4);
+            if (len === 9) return val.slice(0,2) + "  " + val.slice(2,4) + "  " + val.slice(4,5) + "  " + val.slice(5);
+            if (len === 10) return val.slice(0,2) + " " + val.slice(2,4) + "" + val.slice(4,6) + " " + val.slice(6);
+            if (len === 11) return val.slice(0,2) + "" + val.slice(2,4) + "" + val.slice(4,7) + "" + val.slice(7);
+            return val;
+        }
+        function ext_t3_format(val) {
+            val = String(val).trim().replace(/\s/g, '');
+            const len = val.length;
+            if (len === 8) return "\\\\ " + val.slice(0,2) + "    " + val.slice(2,4) + "    " + val.slice(4,8);
+            if (len === 9) return val.slice(0,2) + "  " + val.slice(2,4) + " " + val.slice(4,5) + "  " + val.slice(5,9);
+            if (len === 10) return val.slice(0,2) + " " + val.slice(2,4) + val.slice(4,6) + " " + val.slice(6,10);
+            if (len === 11) return val.slice(0,2) + val.slice(2,7) + val.slice(7,11);
+            return val;
+        }
+        function ext_t0_format(val) {
+            val = String(val).trim().replace(/\s/g, '');
+            const len = val.length;
+            if (len === 8) return "\\\\ " + val.slice(0,2) + "    " + val.slice(2,4) + "    " + val.slice(4,8);
+            if (len === 9) return val.slice(0,2) + "  " + val.slice(2,4) + " " + val.slice(4,5) + "  " + val.slice(5,9);
+            if (len === 10) return val.slice(0,2) + " " + val.slice(2,4) + val.slice(4,6) + " " + val.slice(6,10);
+            if (len === 11) return val.slice(0,2) + val.slice(2,7) + val.slice(7,11);
+            return val;
+        }
+        function ext_t1_format(val) {
+            val = String(val).trim().replace(/\s/g, '');
+            const len = val.length;
+            if (len === 8) return "\\\\ " + val.slice(0,2) + "    " + val.slice(2,4) + "    " + val.slice(4,8);
+            if (len === 9) return val.slice(0,2) + "  " + val.slice(2,4) + " " + val.slice(4,5) + "  " + val.slice(5,9);
+            if (len === 10) return val.slice(0,2) + " " + val.slice(2,4) + val.slice(4,6) + " " + val.slice(6,10);
+            if (len === 11) return val.slice(0,2) + val.slice(2,7) + val.slice(7,11);
+            return val;
+        }
+
+        const formatters = {
+            "T5": t5_format, "T3": t3_format, "EXTT3": ext_t3_format,
+            "T1": t1_format, "EXTT1": ext_t1_format,
+            "T0": t0_format, "EXTT0": ext_t0_format,
+            "T10": t10_format, "T15": t15_format,
+            "T22": t22_format, "T30": t30_format,
+            "BIKE": bike_format, "BIKE1": bike1_format,
+            "TWT0": bike1_format, "TWT1": bike1_format,
+            "TWT3": bike1_format, "TWT5": bike1_format
+        };
+
+        function formatRegistrationNumber(val, freq) {
+            val = String(val).trim().replace(/\s/g, '').toUpperCase();
+            const key = String(freq).trim().toUpperCase().replace(/-/g, '').replace(/\s/g, '');
+            const fn = formatters[key] || ((v) => v);
+            return fn(val);
+        }
+
+        // ----- state -----
+        let currentFile = null;
+        let rawData = [];          // array of objects (parsed CSV)
+        let headers = [];
+        let outputFiles = [];      // { filename, content (csv string) }
+
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const rowBadge = document.getElementById('rowBadge');
+        const freqBadge = document.getElementById('freqBadge');
+        const processBtn = document.getElementById('processBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const outputList = document.getElementById('outputList');
+        const fileCount = document.getElementById('fileCount');
+        const dropZone = document.getElementById('dropZone');
+
+        // ----- helpers -----
+        function parseCSV(text) {
+            const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+            if (lines.length === 0) return { headers: [], rows: [] };
+            const headers = lines[0].split(',').map(h => h.trim());
+            const rows = lines.slice(1).map(line => {
+                const values = line.split(',').map(v => v.trim());
+                const obj = {};
+                headers.forEach((h, i) => { obj[h] = values[i] || ''; });
+                return obj;
+            });
+            return { headers, rows };
+        }
+
+        function arrayToCSV(rows, headers) {
+            if (!rows || rows.length === 0) return '';
+            const headerLine = headers.join(',');
+            const body = rows.map(row => headers.map(h => row[h] || '').join(',')).join('\n');
+            return headerLine + '\n' + body;
+        }
+
+        function updateUIAfterProcess() {
+            if (outputFiles.length === 0) {
+                outputList.innerHTML = `<div class="empty-message">📭 no groups created</div>`;
+                fileCount.textContent = '0';
+                return;
+            }
+            let html = '';
+            outputFiles.forEach((f, idx) => {
+                html += `
+                    <div class="output-item">
+                        <span class="fname">📄 ${f.filename}</span>
+                        <button class="dl-btn" data-index="${idx}">⬇ download</button>
+                    </div>
+                `;
+            });
+            outputList.innerHTML = html;
+            fileCount.textContent = outputFiles.length;
+            // attach download events
+            document.querySelectorAll('.dl-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = parseInt(e.target.dataset.index, 10);
+                    const file = outputFiles[idx];
+                    if (!file) return;
+                    const blob = new Blob([file.content], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = file.filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    setTimeout(() => URL.revokeObjectURL(link.href), 1500);
+                });
+            });
+        }
+
+        function processCSV() {
+            if (!rawData.length) {
+                alert('No data loaded. Please select a CSV file.');
+                return;
+            }
+            // expected columns: motor_whilter__frequency, motor_whilter__language, motor_whilter__registrationnumber
+            const freqCol = 'motor_whilter__frequency';
+            const langCol = 'motor_whilter__language';
+            const regCol = 'motor_whilter__registrationnumber';
+            // ensure columns exist
+            if (!headers.includes(freqCol) || !headers.includes(langCol) || !headers.includes(regCol)) {
+                alert(`CSV must contain columns: "${freqCol}", "${langCol}", "${regCol}"`);
+                return;
+            }
+
+            // normalize frequency & language (same as python)
+            const data = rawData.map(row => {
+                const newRow = { ...row };
+                const freq = String(row[freqCol] || '').toUpperCase().replace(/-/g, '').replace(/\s/g, '');
+                newRow[freqCol] = freq;
+                const lang = String(row[langCol] || '').trim().replace(/\s/g, '_');
+                newRow[langCol] = lang;
+                // format registration number
+                newRow[regCol] = formatRegistrationNumber(row[regCol] || '', freq);
+                return newRow;
+            });
+
+            // group by frequency + language
+            const groups = new Map();
+            data.forEach(row => {
+                const key = `${row[freqCol]}|${row[langCol]}`;
+                if (!groups.has(key)) groups.set(key, []);
+                groups.get(key).push(row);
+            });
+
+            // build output files
+            const baseName = currentFile ? currentFile.name.replace(/\.csv$/i, '') : 'output';
+            outputFiles = [];
+            for (const [key, rows] of groups.entries()) {
+                const [freq, lang] = key.split('|');
+                const filename = `${baseName}_${freq}_${lang}.csv`;
+                const content = arrayToCSV(rows, headers);
+                outputFiles.push({ filename, content });
+            }
+
+            updateUIAfterProcess();
+            rowBadge.textContent = `${data.length} rows`;
+            freqBadge.textContent = `${groups.size} groups`;
+        }
+
+        // ----- file handling -----
+        function loadFile(file) {
+            if (!file) return;
+            currentFile = file;
+            fileInfo.innerHTML = `📎 <span>${file.name}</span> (${(file.size/1024).toFixed(1)} KB)`;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target.result;
+                const { headers, rows } = parseCSV(text);
+                if (headers.length === 0 || rows.length === 0) {
+                    alert('Empty or invalid CSV.');
+                    return;
+                }
+                rawData = rows;
+                headers = headers;
+                rowBadge.textContent = `${rows.length} rows`;
+                freqBadge.textContent = '—';
+                processBtn.disabled = false;
+                outputFiles = [];
+                outputList.innerHTML = `<div class="empty-message">⏳ click "process &amp; split"</div>`;
+                fileCount.textContent = '0';
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        // ----- event binding -----
+        fileInput.addEventListener('change', (e) => {
+            if (fileInput.files.length) loadFile(fileInput.files[0]);
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                const file = e.dataTransfer.files[0];
+                if (file.name.toLowerCase().endsWith('.csv')) {
+                    fileInput.files = e.dataTransfer.files;
+                    loadFile(file);
+                } else {
+                    alert('Please drop a CSV file.');
+                }
+            }
+        });
+
+        processBtn.addEventListener('click', processCSV);
+
+        clearBtn.addEventListener('click', () => {
+            currentFile = null;
+            rawData = [];
+            headers = [];
+            outputFiles = [];
+            fileInput.value = '';
+            fileInfo.innerHTML = 'no file selected';
+            rowBadge.textContent = '0 rows';
+            freqBadge.textContent = '—';
+            processBtn.disabled = true;
+            outputList.innerHTML = `<div class="empty-message">⏳ process a CSV to see files</div>`;
+            fileCount.textContent = '0';
+        });
+
+        // init
+        processBtn.disabled = true;
+    })();
+</script>
+</body>
+</html>
