@@ -155,6 +155,23 @@
         .btn-outline:hover {
             background: #e8eef6;
         }
+        .btn-download-all {
+            background: #2d8b57;
+            border-color: #2d8b57;
+            color: white;
+            padding: 0.5rem 1.8rem;
+            font-size: 0.95rem;
+        }
+        .btn-download-all:hover {
+            background: #1f6f44;
+            transform: scale(1.02);
+        }
+        .btn-download-all:disabled {
+            background: #8bb09b;
+            border-color: #8bb09b;
+            cursor: not-allowed;
+            transform: none;
+        }
         .output-section {
             margin-top: 1.8rem;
             border-top: 1px solid #e2eaf3;
@@ -254,17 +271,12 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         
-        .btn-download-all {
-            background: #2d8b57;
-            border-color: #2d8b57;
+        .badge-count {
+            background: #1a5fb0;
             color: white;
-        }
-        .btn-download-all:hover {
-            background: #1f6f44;
-        }
-        .btn-download-all:disabled {
-            background: #8bb09b;
-            border-color: #8bb09b;
+            padding: 0.1rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
         }
     </style>
 </head>
@@ -272,7 +284,7 @@
 <div class="card">
     <h1>📄 registration · split</h1>
     <div class="sub">
-        ⚡ formats reg numbers by frequency &amp; language
+        ⚡ replicates python script logic · formats reg numbers by frequency &amp; language
     </div>
 
     <div class="alert" id="alertBox"></div>
@@ -301,9 +313,11 @@
         <div class="output-header">
             <div class="output-header-left">
                 <span>📦 output files</span>
-                <span id="fileCount" style="font-size: 0.8rem; background: #e9f0f9; padding: 0.1rem 1rem; border-radius: 30px;">0</span>
+                <span id="fileCount" class="badge-count">0</span>
             </div>
-            <button class="btn btn-download-all" id="downloadAllBtn" disabled>📥 Download All</button>
+            <button class="btn btn-download-all" id="downloadAllBtn" disabled>
+                📥 Download All
+            </button>
         </div>
         <div class="output-list" id="outputList">
             <div class="empty-message">⏳ process a CSV to see files</div>
@@ -617,6 +631,10 @@
                 return;
             }
 
+            // Show loading state
+            downloadAllBtn.textContent = '⏳ Creating ZIP...';
+            downloadAllBtn.disabled = true;
+
             const zip = new JSZip();
             const folder = zip.folder('csv_files');
 
@@ -629,9 +647,13 @@
                     const baseName = currentFile ? currentFile.name.replace(/\.csv$/i, '') : 'output';
                     saveAs(content, `${baseName}_all_files.zip`);
                     showAlert(`✅ Downloaded ${outputFiles.length} files as ZIP`, false);
+                    downloadAllBtn.textContent = '📥 Download All';
+                    downloadAllBtn.disabled = false;
                 })
                 .catch(function(err) {
                     showAlert('Error creating ZIP: ' + err.message);
+                    downloadAllBtn.textContent = '📥 Download All';
+                    downloadAllBtn.disabled = false;
                 });
         }
 
