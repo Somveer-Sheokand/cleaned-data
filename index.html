@@ -160,6 +160,23 @@
             border-top: 1px solid #e2eaf3;
             padding-top: 1.8rem;
         }
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .output-header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .output-header-left span {
+            font-weight: 600;
+            color: #12304b;
+        }
         .output-list {
             background: #fafcfe;
             border-radius: 20px;
@@ -236,13 +253,26 @@
             margin-right: 8px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .btn-download-all {
+            background: #2d8b57;
+            border-color: #2d8b57;
+            color: white;
+        }
+        .btn-download-all:hover {
+            background: #1f6f44;
+        }
+        .btn-download-all:disabled {
+            background: #8bb09b;
+            border-color: #8bb09b;
+        }
     </style>
 </head>
 <body>
 <div class="card">
     <h1>📄 registration · split</h1>
     <div class="sub">
-        ⚡ replicates python script logic · formats reg numbers by frequency &amp; language
+        ⚡ formats reg numbers by frequency &amp; language
     </div>
 
     <div class="alert" id="alertBox"></div>
@@ -268,9 +298,12 @@
 
     <!-- output -->
     <div class="output-section">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-            <span style="font-weight: 600; color: #12304b;">📦 output files</span>
-            <span id="fileCount" style="font-size: 0.8rem; background: #e9f0f9; padding: 0.1rem 1rem; border-radius: 30px;">0</span>
+        <div class="output-header">
+            <div class="output-header-left">
+                <span>📦 output files</span>
+                <span id="fileCount" style="font-size: 0.8rem; background: #e9f0f9; padding: 0.1rem 1rem; border-radius: 30px;">0</span>
+            </div>
+            <button class="btn btn-download-all" id="downloadAllBtn" disabled>📥 Download All</button>
         </div>
         <div class="output-list" id="outputList">
             <div class="empty-message">⏳ process a CSV to see files</div>
@@ -281,6 +314,8 @@
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <script>
     (function() {
         // ----- core formatters (exact match to python) -----
@@ -436,6 +471,7 @@
         const fileCount = document.getElementById('fileCount');
         const dropZone = document.getElementById('dropZone');
         const alertBox = document.getElementById('alertBox');
+        const downloadAllBtn = document.getElementById('downloadAllBtn');
 
         function showAlert(msg, isError = true) {
             alertBox.textContent = msg;
@@ -541,6 +577,7 @@
             if (outputFiles.length === 0) {
                 outputList.innerHTML = `<div class="empty-message">📭 no groups created</div>`;
                 fileCount.textContent = '0';
+                downloadAllBtn.disabled = true;
                 return;
             }
             let html = '';
@@ -554,6 +591,7 @@
             });
             outputList.innerHTML = html;
             fileCount.textContent = outputFiles.length;
+            downloadAllBtn.disabled = false;
             
             document.querySelectorAll('.dl-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -570,6 +608,31 @@
                     setTimeout(() => URL.revokeObjectURL(link.href), 1500);
                 });
             });
+        }
+
+        // ----- Download All as ZIP -----
+        function downloadAllFiles() {
+            if (outputFiles.length === 0) {
+                showAlert('No files to download. Process a CSV first.');
+                return;
+            }
+
+            const zip = new JSZip();
+            const folder = zip.folder('csv_files');
+
+            outputFiles.forEach(file => {
+                folder.file(file.filename, file.content);
+            });
+
+            zip.generateAsync({ type: 'blob' })
+                .then(function(content) {
+                    const baseName = currentFile ? currentFile.name.replace(/\.csv$/i, '') : 'output';
+                    saveAs(content, `${baseName}_all_files.zip`);
+                    showAlert(`✅ Downloaded ${outputFiles.length} files as ZIP`, false);
+                })
+                .catch(function(err) {
+                    showAlert('Error creating ZIP: ' + err.message);
+                });
         }
 
         function processCSV() {
@@ -649,6 +712,7 @@
                     outputFiles = [];
                     outputList.innerHTML = `<div class="empty-message">⏳ click "process &amp; split"</div>`;
                     fileCount.textContent = '0';
+                    downloadAllBtn.disabled = true;
                     showAlert(`✅ Loaded ${parsedRows.length} rows from ${file.name}`, false);
                 } catch (err) {
                     showAlert(`Error reading file: ${err.message}`);
@@ -689,6 +753,7 @@
         });
 
         processBtn.addEventListener('click', processCSV);
+        downloadAllBtn.addEventListener('click', downloadAllFiles);
 
         clearBtn.addEventListener('click', () => {
             currentFile = null;
@@ -702,11 +767,13 @@
             processBtn.disabled = true;
             outputList.innerHTML = `<div class="empty-message">⏳ process a CSV to see files</div>`;
             fileCount.textContent = '0';
+            downloadAllBtn.disabled = true;
             alertBox.className = 'alert';
         });
 
         // init
         processBtn.disabled = true;
+        downloadAllBtn.disabled = true;
     })();
 </script>
 </body>
